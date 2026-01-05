@@ -34,6 +34,7 @@ model Edge {
   sourceId    String
   targetId    String
   workflowId  String
+  condition   Json?
   workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   source      Node     @relation("SourceNode", fields: [sourceId], references: [id])
   target      Node     @relation("TargetNode", fields: [targetId], references: [id])

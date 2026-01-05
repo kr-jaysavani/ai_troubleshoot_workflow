@@ -70,6 +70,7 @@ export async function PUT(
                     sourceId: edge.source,
                     targetId: edge.target,
                     workflowId: id,
+                    condition: edge.condition || null,
                 })),
             });
         }
