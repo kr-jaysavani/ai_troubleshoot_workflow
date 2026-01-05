@@ -1,0 +1,50 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Workflow {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  nodes       Node[]
+  edges       Edge[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Node {
+  id          String   @id @default(uuid())
+  type        NodeType
+  positionX   Float    @default(0)
+  positionY   Float    @default(0)
+  config      Json
+  workflowId  String
+  workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  sourceEdges Edge[]   @relation("SourceNode")
+  targetEdges Edge[]   @relation("TargetNode")
+}
+
+model Edge {
+  id          String   @id @default(uuid())
+  sourceId    String
+  targetId    String
+  workflowId  String
+  workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  source      Node     @relation("SourceNode", fields: [sourceId], references: [id])
+  target      Node     @relation("TargetNode", fields: [targetId], references: [id])
+}
+
+enum NodeType {
+  WELCOME
+  INSTRUCTION
+  IMAGE_CAPTURE
+  IMAGE_ANALYSIS
+  AI_NODE
+  ISSUE_FINDER
+  LOGICAL_NODE
+}
