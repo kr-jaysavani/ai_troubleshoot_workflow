@@ -132,7 +132,7 @@ function AnalysisNode({ config, image, onNext, onAnalysisComplete }: any) {
                 const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image }), // In real app, might need FormData or Base64 handling
+                    body: JSON.stringify({ inputData: { image:image } }), // In real app, might need FormData or Base64 handling
                 });
                 const data = await res.json();
                 onAnalysisComplete(data);
