@@ -15,7 +15,7 @@ import ReactFlow, {
   BackgroundVariant,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Save, Plus, ArrowLeft, Loader2 } from 'lucide-react';
+import { Save, Plus, ArrowLeft, Loader2, Trash2, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -46,6 +46,7 @@ export default function WorkflowEditor({ initialWorkflow }: { initialWorkflow: a
   );
   
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
   const [saving, setSaving] = useState(false);
 
   const onConnect = useCallback(
@@ -55,10 +56,17 @@ export default function WorkflowEditor({ initialWorkflow }: { initialWorkflow: a
 
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
+    setSelectedEdge(null); // Clear edge selection
+  }, []);
+
+  const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
+    setSelectedEdge(edge);
+    setSelectedNode(null); // Clear node selection
   }, []);
 
   const onPaneClick = useCallback(() => {
     setSelectedNode(null);
+    setSelectedEdge(null);
   }, []);
 
   const handleAddNode = (type: string) => {
@@ -70,6 +78,18 @@ export default function WorkflowEditor({ initialWorkflow }: { initialWorkflow: a
       data: { label: type, type, config: {} },
     };
     setNodes((nds) => nds.concat(newNode));
+  };
+
+  const handleDeleteNode = (nodeId: string) => {
+    if (!confirm('Are you sure you want to delete this node?')) return;
+    setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+    setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
+    setSelectedNode(null);
+  };
+
+  const handleDeleteEdge = (edgeId: string) => {
+    setEdges((eds) => eds.filter((e) => e.id !== edgeId));
+    setSelectedEdge(null);
   };
 
   const handleUpdateNodeConfig = (nodeId: string, newConfig: any) => {
@@ -174,8 +194,10 @@ export default function WorkflowEditor({ initialWorkflow }: { initialWorkflow: a
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onNodeClick={onNodeClick}
+          onEdgeClick={onEdgeClick}
           onPaneClick={onPaneClick}
           fitView
+          deleteKeyCode={['Backspace', 'Delete']}
           className="bg-neutral-900"
         >
           <Background color="#333" gap={16} variant={BackgroundVariant.Dots} />
@@ -185,14 +207,53 @@ export default function WorkflowEditor({ initialWorkflow }: { initialWorkflow: a
 
       {/* Config Panel */}
       {selectedNode && (
-        <div className="w-80 border-l border-neutral-800 bg-neutral-950 p-4 overflow-y-auto">
+        <div className="w-80 border-l border-neutral-800 bg-neutral-950 p-4 h-full">
             <NodeConfigPanel 
                 node={selectedNode} 
                 onChange={(config) => handleUpdateNodeConfig(selectedNode.id, config)} 
+                onDelete={() => handleDeleteNode(selectedNode.id)}
                 onClose={() => setSelectedNode(null)}
             />
         </div>
       )}
+
+       {/* Edge Config Panel (Mini) */}
+       {selectedEdge && (
+         <div className="w-80 border-l border-neutral-800 bg-neutral-950 p-4 h-full">
+            <div className="flex items-center justify-between border-b border-neutral-800 pb-4 mb-4">
+                <h3 className="font-semibold text-white">Connection</h3>
+                <button onClick={() => setSelectedEdge(null)} className="p-1 hover:bg-neutral-800 rounded text-neutral-400">
+                   <X className="w-4 h-4" />
+                </button>
+            </div>
+            <div className="space-y-4 mb-6">
+                 <div>
+                    <span className="text-xs text-neutral-500 uppercase tracking-wider">From</span>
+                    <p className="text-sm text-white font-medium">
+                        {nodes.find(n => n.id === selectedEdge.source)?.data.label.replace('_', ' ') || selectedEdge.source}
+                    </p>
+                    {/* <p className="text-[10px] text-neutral-600 font-mono truncate">{selectedEdge.source}</p> */}
+                 </div>
+                 <div className="flex justify-center">
+                    <div className="h-4 w-0.5 bg-neutral-800"></div>
+                 </div>
+                 <div>
+                    <span className="text-xs text-neutral-500 uppercase tracking-wider">To</span>
+                    <p className="text-sm text-white font-medium">
+                        {nodes.find(n => n.id === selectedEdge.target)?.data.label.replace('_', ' ') || selectedEdge.target}
+                    </p>
+                    {/* <p className="text-[10px] text-neutral-600 font-mono truncate">{selectedEdge.target}</p> */}
+                 </div>
+            </div>
+             <button
+                onClick={() => handleDeleteEdge(selectedEdge.id)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg font-medium transition-colors border border-red-500/20"
+                >
+                <Trash2 className="w-4 h-4" />
+                Delete Connection
+            </button>
+         </div>
+       )}
     </div>
   );
 }

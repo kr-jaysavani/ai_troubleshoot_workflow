@@ -3,16 +3,18 @@
 // Define the shape of our configs
 type NodeConfig = any;
 
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function NodeConfigPanel({ 
     node, 
     onChange,
+    onDelete,
     onClose 
 }: { 
     node: any; 
     onChange: (config: NodeConfig) => void;
+    onDelete: () => void;
     onClose: () => void;
 }) {
   const [config, setConfig] = useState(node.data.config || {});
@@ -31,7 +33,7 @@ export default function NodeConfigPanel({
   const type = node.data.type;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 flex flex-col h-full">
       <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
         <div>
             <h3 className="font-semibold text-white">{type.replace('_', ' ')}</h3>
@@ -42,7 +44,7 @@ export default function NodeConfigPanel({
         </button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 flex-1 overflow-y-auto">
         {/* Common: Title */}
         {(type === 'WELCOME' || type === 'INSTRUCTION' || type === 'IMAGE_CAPTURE') && (
             <div className="space-y-1">
@@ -135,6 +137,16 @@ export default function NodeConfigPanel({
             </div>
         )}
 
+      </div>
+      
+      <div className="pt-4 border-t border-neutral-800">
+          <button
+            onClick={onDelete}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg font-medium transition-colors border border-red-500/20"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete Node
+          </button>
       </div>
     </div>
   );
