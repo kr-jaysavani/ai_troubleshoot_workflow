@@ -128,7 +128,7 @@ function AnalysisNode({ config, image, onNext, onAnalysisComplete }: any) {
     useEffect(() => {
         const analyze = async () => {
             try {
-                const endpoint = config.apiUrl || '/api/mock/analyze';
+                const endpoint = config.apiUrl || '/api/image/analyze';
                 const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
